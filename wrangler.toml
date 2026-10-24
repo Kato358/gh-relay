@@ -1,0 +1,37 @@
+#:schema node_modules/wrangler/config-schema.json
+# Deploy: `npm run deploy` (builds dist/worker.js first), or paste dist/worker.js
+# into the dashboard. No bindings are required for a working deployment.
+name = "gh-relay"
+main = "dist/worker.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = true
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Wrangler deploys the prebuilt bundle. `npm run build` (esbuild) inlines the
+# two subset woff2 files as base64 so there is no runtime asset fetch and no
+# binary-module edge case. `npm run deploy` runs the build first.
+
+# Optional per-IP rate limiting. Create the binding in the dashboard
+# (Workers → your worker → Settings → Bindings → Rate Limiting) and name it
+# RATE_LIMITER. Without it the Worker serves every request normally; the
+# binding is never required for a working deployment.
+# [[ratelimits]]
+# name = "RATE_LIMITER"
+# namespace_id = "1001"
+# simple = { limit = 300, period = 60 }
+
+[env.staging]
+name = "gh-relay-staging"
+workers_dev = true
+
+# Optional runtime switches. Uncomment and edit; every one is independent.
+# [vars]
+# MASK = "nginx"                      # or a URL to reverse-proxy, or "" to disable
+# MASK302 = "https://example.com/"    # redirects non-proxy paths instead of the homepage
+# BLOCK_UA = "netcraft,AhrefsBot"     # matching user agents get the mask page only
+# ALLOW_HOSTS = ""                    # extra hosts appended to the built-in table

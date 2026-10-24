@@ -1,0 +1,21 @@
+{
+  "name": "gh-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GitHub file relay on Cloudflare Workers: releases, raw, archives, gists, API and read-only git clone.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "build": "node scripts/build.js",
+    "fonts": "python scripts/build-font.py",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "wrangler": "^4.0.0"
+  }
+}
