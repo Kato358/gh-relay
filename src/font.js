@@ -29,7 +29,7 @@ export async function displayFont() {
   font-display: swap;
 }
 :root {
-  --display: "Headline", "Source Han Serif SC", "Songti SC", serif;
+  --display: "Headline", "Alibaba PuHuiTi", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --mono: "Relay Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }`,
   };

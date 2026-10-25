@@ -1,12 +1,15 @@
 /**
  * The homepage: one tool, no chrome.
  *
- * Layout notes
- * - Cool paper ground, white card for the tool, one indigo accent used for the
- *   injected host segment, the submit button and section links. The command
- *   panel stays ink-dark in both schemes so the copyable line reads as code.
- * - The hero is the tool itself; the headline sits above it and never repeats
- *   what the result field already shows.
+ * Design language — "highlighter on the desk"
+ * - Warm paper ground with a faint graph-paper grid; the accent is a marker
+ *   yellow (#ffd43b, the favicon's yellow) used as a highlighter, not a tint:
+ *   the second headline line is swiped on load, the injected relay prefix is
+ *   a yellow stamp chip, short prefixes are washed with the same yellow.
+ * - The tool is the one heavy object (ink border + hard offset shadow);
+ *   everything after it is hairline rules and type, no cards.
+ * - Routing rows carry a colored dot that mirrors the Worker's own
+ *   X-Proxy-Rule classes; a legend under the section title decodes them.
  * - No-JS contract: the form is a real GET form with `name="q"`; the Worker
  *   answers `/?q=…` with a 301, so the page works without JavaScript.
  */
@@ -19,8 +22,8 @@ export const HTML_HEAD = `<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f5fa">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#080a0f">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fffdf6">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14120d">
 <meta name="description" content="GitHub 文件中转：release、raw、archive、gist、API 与只读 git clone。">
 <title>GitHub 文件中转</title>`;
 
@@ -33,86 +36,84 @@ export function documentShell(fontCss) {
 /* ===== tokens ===== */
 :root {
   color-scheme: light;
-  --paper: #f4f5fa;
+  --paper: #fffdf6;
   --card: #ffffff;
-  --surface: #f1f3f8;
-  --sunken: #eef0f6;
-  --ink: #0f1117;
-  --ink-2: #39414f;
-  --muted: #5b6472;
-  --line: #dfe3ec;
-  --line-strong: #c9d0dc;
-  --accent: #4a45d6;
-  --accent-hover: #3a35bd;
-  --accent-ink: #ffffff;
-  --ok: #12864a;
-  --ok-soft: #e8f6ee;
-  --danger: #b3251e;
-  --danger-soft: #fdf1f0;
-  --focus: #4a45d6;
-  --ring: rgba(74, 69, 214, .18);
-  --seg-active: #ffffff;
-  --glow: rgba(74, 69, 214, .10);
-  --shadow: 0 1px 2px rgba(15, 17, 23, .05), 0 18px 40px -28px rgba(15, 17, 23, .45);
-  /* The command panel is ink-dark in both schemes: one fixed set of tokens. */
-  --code: #0f141c;
-  --code-line: #232b3a;
-  --code-ink: #e3eaf7;
-  /* The panel ground never changes, so its chip needs the light accent in both
-     schemes: the indigo used on paper would sit at 2.7:1 against it. */
-  --code-chip: #a5a1ff;
-  --code-chip-ink: #0a0c11;
-  --code-btn: #1a2130;
-  --code-btn-hover: #232c3e;
-  --code-btn-line: #2b3446;
+  --ink: #26221a;
+  --ink-2: #4a4436;
+  --muted: #6f6752;
+  --line: #e9e2cf;
+  --line-strong: #d3cab0;
+  --accent: #ffd43b;
+  --accent-deep: #8a6d00;
+  --accent-ink: #26221a;
+  --accent-wash: rgba(255, 212, 59, .35);
+  --halo: rgba(255, 212, 59, .45);
+  --ok: #0b7f46;
+  --ok-soft: #e9f6ec;
+  --danger: #bf2417;
+  --danger-soft: #fcefec;
+  --grid: rgba(38, 34, 26, .05);
+  --offset: #26221a;
+  /* Routing dots mirror the X-Proxy-Rule response classes. */
+  --rule-immutable: #2f9e44;
+  --rule-refresh: #1971c2;
+  --rule-standard: #f08c00;
+  --rule-api: #d6336c;
+  --rule-git: #6741d9;
+  --rule-lfs: #0c8599;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --paper: #080a0f;
-    --card: #10141b;
-    --surface: #171d27;
-    --sunken: #0c1118;
-    --ink: #eef1f6;
-    --ink-2: #cbd3df;
-    --muted: #98a2b2;
-    --line: #232a37;
-    --line-strong: #313a4b;
-    --accent: #8f8aff;
-    --accent-hover: #a5a1ff;
-    --accent-ink: #0a0c11;
+    --paper: #14120d;
+    --card: #1c1913;
+    --ink: #f2ede2;
+    --ink-2: #d6cfbf;
+    --muted: #a69d87;
+    --line: #2b271e;
+    --line-strong: #403a2c;
+    --accent: #ffd43b;
+    --accent-deep: #ffd43b;
+    --accent-ink: #1f1b10;
+    --accent-wash: rgba(255, 212, 59, .13);
+    --halo: rgba(255, 212, 59, .26);
     --ok: #4ad686;
     --ok-soft: #10241a;
     --danger: #ff9b91;
     --danger-soft: #241315;
-    --focus: #a9a5ff;
-    --ring: rgba(143, 138, 255, .26);
-    --seg-active: #232b38;
-    --glow: rgba(143, 138, 255, .12);
-    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 20px 44px -30px rgba(0, 0, 0, .9);
-    --code: #0b0f16;
-    --code-line: #1e2635;
+    --grid: rgba(242, 237, 226, .045);
+    --offset: #060503;
+    --rule-immutable: #69db7c;
+    --rule-refresh: #74c0fc;
+    --rule-standard: #ffc078;
+    --rule-api: #faa2c1;
+    --rule-git: #b197fc;
+    --rule-lfs: #66d9e8;
   }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
+  /* Graph-paper desk: a faint grid plus one soft glow behind the headline. */
   background:
-    radial-gradient(1200px 520px at 50% -220px, var(--glow), transparent 70%),
+    radial-gradient(900px 420px at 82% -180px, var(--accent-wash), transparent 70%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
     var(--paper);
-  background-repeat: no-repeat;
+  background-size: auto, 36px 36px, 36px 36px, auto;
   color: var(--ink);
   font: 400 16.5px/1.75 "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
   font-feature-settings: "palt" 1;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
+::selection { background: var(--accent); color: var(--accent-ink); }
 button, input { touch-action: manipulation; }
-.page { max-width: 880px; margin: 0 auto; padding: 0 24px 80px; }
-a { color: var(--accent); text-underline-offset: 3px; }
+.page { max-width: 820px; margin: 0 auto; padding: 0 24px 80px; }
+a { color: var(--accent-deep); text-underline-offset: 3px; }
 :focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -123,33 +124,35 @@ a { color: var(--accent); text-underline-offset: 3px; }
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 20px 0 16px;
+  padding: 22px 0 16px;
 }
 .wordmark {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
   letter-spacing: .01em;
 }
+/* A tiny sticker for the mark; the rotation is the whole joke, keep it. */
 .wordmark::before {
   content: "";
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 3px;
   background: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 1px var(--ink);
+  transform: rotate(-8deg);
 }
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
+  gap: 7px;
   font-size: 12px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--card);
   border-radius: 999px;
   padding: 4px 11px;
@@ -167,32 +170,53 @@ a { color: var(--accent); text-underline-offset: 3px; }
 }
 
 /* ===== hero ===== */
-.hero { padding: 40px 0 0; }
+.hero { padding: 36px 0 0; }
 .headline {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(30px, 4.6vw, 50px);
-  line-height: 1.24;
-  letter-spacing: -.01em;
+  font-size: clamp(24px, 6.4vw, 54px);
+  line-height: 1.3;
+  letter-spacing: -.005em;
   margin: 0;
-  max-width: 15em;
   color: var(--ink);
-  text-wrap: balance;
 }
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-  .headline {
-    background: linear-gradient(96deg, var(--ink) 34%, var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+.headline .l1 { display: block; }
+/* The highlighted line: the marker swipe is the page's one big moment. The
+   line must stay a single run, so it is an inline-block with nowrap; the
+   headline scale bottoms out at 24px to keep 11 glyphs inside 320px. */
+.headline .hl {
+  display: inline-block;
+  white-space: nowrap;
+  position: relative;
+  z-index: 0;
+  margin-top: .1em;
+}
+/* The band is marker yellow in both schemes, so the text riding on it must
+   stay dark ink even when the page ground flips dark. */
+.headline .hl { color: #26221a; }
+.headline .hl::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -.14em;
+  right: -.2em;
+  top: .1em;
+  bottom: .04em;
+  background: var(--accent);
+  border-radius: .14em;
+  transform: skew(-12deg) rotate(-.7deg);
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .headline .hl::before { animation: swipe .7s .12s cubic-bezier(.2, .7, .2, 1) both; }
+  @keyframes swipe {
+    from { transform: skew(-12deg) rotate(-.7deg) scaleX(0); opacity: .6; }
+    to { transform: skew(-12deg) rotate(-.7deg) scaleX(1); opacity: 1; }
   }
 }
-/* Both sentences share one bounding box; each breaks on its own comma. */
-.headline span { display: inline; }
-.headline span + span::before { content: " "; }
 .lead {
-  margin: 16px 0 0;
-  max-width: 36em;
+  margin: 18px 0 0;
+  max-width: 34em;
   color: var(--muted);
   font-size: 15.5px;
   text-wrap: pretty;
@@ -200,12 +224,12 @@ a { color: var(--accent); text-underline-offset: 3px; }
 
 /* ===== tool ===== */
 .tool {
-  margin-top: 28px;
-  border: 1px solid var(--line);
+  margin-top: 30px;
+  border: 2px solid var(--ink);
   background: var(--card);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 20px 20px 22px;
-  box-shadow: var(--shadow);
+  box-shadow: 6px 6px 0 var(--offset);
   scroll-margin-top: 16px;
 }
 .field { position: relative; }
@@ -221,18 +245,17 @@ label.field-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  border-radius: 10px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
+  border-radius: 12px;
   padding: 0 6px 0 14px;
   min-height: 54px;
-  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
-.input-shell:hover { border-color: var(--muted); }
+.input-shell:hover { border-color: var(--ink-2); }
 .input-shell:focus-within {
-  border-color: var(--accent);
-  background: var(--card);
-  box-shadow: 0 0 0 4px var(--ring);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px var(--halo);
 }
 .input-shell input {
   flex: 1;
@@ -253,8 +276,8 @@ label.field-label {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 9px;
   background: var(--card);
   color: var(--ink-2);
   font: inherit;
@@ -266,25 +289,31 @@ label.field-label {
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 .ghost-button[hidden] { display: none; }
-.ghost-button:hover { border-color: var(--muted); color: var(--ink); background: var(--surface); }
+.ghost-button:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+  background: var(--accent-wash);
+}
 .ghost-button:active { transform: translateY(.5px); }
 .ghost-button[data-done="true"] { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
 
 /* The one filled button on the page: the submit control. */
 #tool button[type="submit"] {
-  border-color: transparent;
+  border: 1.5px solid var(--ink);
   background: var(--accent);
   color: var(--accent-ink);
-  font-weight: 600;
+  font-weight: 700;
   padding: 7px 18px;
-  box-shadow: 0 1px 2px rgba(15, 17, 23, .18);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 #tool button[type="submit"]:hover {
-  background: var(--accent-hover);
-  border-color: transparent;
-  color: var(--accent-ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
 }
-#tool button[type="submit"]:active { transform: translateY(.5px); }
+#tool button[type="submit"]:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0 0 0 var(--ink);
+}
 
 .result { margin-top: 18px; }
 .result-label {
@@ -303,9 +332,9 @@ label.field-label {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--sunken);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--card);
   padding: 8px 8px 8px 14px;
   min-height: 52px;
 }
@@ -324,46 +353,48 @@ label.field-label {
   overflow-x: auto;
   overscroll-behavior-x: contain;
 }
-/* The marker is one indivisible token. Letting it break across lines produces
-   two half-filled boxes that read as an overlap, so it stays on one line and
-   scrolls with its parent instead. It is filled with the accent rather than a
-   tint: the sunken ground is near-white (near-black in dark) and a tint would
-   disappear into it. */
+/* The injected relay host is a stamped chip: marker yellow, inked edge, one
+   lifted corner. It is one indivisible token — letting it break across lines
+   would produce two half-filled boxes — so it stays on one line and scrolls
+   with its parent. */
 .result-text .prefix {
   background: var(--accent);
   color: var(--accent-ink);
-  border-radius: 5px;
-  padding: 2px 6px;
+  border-radius: 6px 6px 6px 2px;
+  padding: 2px 7px;
+  box-shadow: 1.5px 1.5px 0 var(--ink);
   white-space: nowrap;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+  transform-origin: left center;
 }
 .command code .prefix {
-  background: var(--code-chip);
-  color: var(--code-chip-ink);
-  border-radius: 5px;
-  padding: 2px 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 6px 6px 6px 2px;
+  padding: 2px 7px;
   white-space: nowrap;
 }
-.command code .placeholder { color: #96a3b8; }
+.command code .placeholder { color: var(--muted); }
 .command .ghost-button[hidden] { display: none; }
 .result-text .rest { color: var(--ink-2); }
 .result-empty { color: var(--muted); }
 
-.flash { animation: chip-in 300ms ease-out; }
-@keyframes chip-in {
-  from { opacity: .35; }
-  to { opacity: 1; }
+/* Stamp-in: the chip lands like a pressed seal when a result appears. */
+.flash { animation: stamp 300ms cubic-bezier(.2, .8, .3, 1.15); }
+@keyframes stamp {
+  from { transform: scale(1.3) rotate(-3deg); opacity: .5; }
+  to { transform: none; opacity: 1; }
 }
 
-/* ===== commands ===== */
+/* ===== commands: a coupon, not a terminal panel ===== */
 .commands { margin-top: 22px; }
 .tabs {
   display: inline-flex;
   gap: 2px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  border-radius: 9px;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  border-radius: 10px;
   padding: 3px;
   margin: 0 0 10px;
 }
@@ -371,7 +402,7 @@ label.field-label {
   appearance: none;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 6px 12px;
   font: inherit;
   font-size: 12.5px;
@@ -380,20 +411,20 @@ label.field-label {
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease;
 }
-.tabs button:hover { color: var(--ink); }
+.tabs button:hover { color: var(--ink); background: var(--accent-wash); }
 .tabs button[aria-pressed="true"] {
-  color: var(--ink);
-  background: var(--seg-active);
+  color: var(--paper);
+  background: var(--ink);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(15, 17, 23, .12);
+  box-shadow: 1.5px 1.5px 0 var(--accent);
 }
 .command {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  border: 1px solid var(--code-line);
-  border-radius: 10px;
-  background: var(--code);
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 12px;
+  background: transparent;
   padding: 11px 11px 11px 14px;
 }
 .command code {
@@ -405,34 +436,32 @@ label.field-label {
   line-height: 1.8;
   overflow-wrap: anywhere;
   word-break: normal;
-  color: var(--code-ink);
+  color: var(--ink);
 }
 .command .ghost-button {
-  border-color: var(--code-btn-line);
-  background: var(--code-btn);
-  color: var(--code-ink);
+  border-color: var(--line-strong);
+  background: var(--card);
+  color: var(--ink-2);
 }
 .command .ghost-button:hover {
-  border-color: var(--code-btn-hover);
-  background: var(--code-btn-hover);
-  color: #ffffff;
+  border-color: var(--ink-2);
+  background: var(--accent-wash);
+  color: var(--ink);
 }
 
-/* ===== support table ===== */
+/* ===== reference sections: hairlines and type, no cards ===== */
 .support {
   margin-top: 44px;
-  padding: 22px 22px 8px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--card);
+  padding: 18px 0 0;
+  border-top: 2px solid var(--ink);
 }
 .support h2 {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: .01em;
-  margin: 0 0 3px;
+  margin: 0;
 }
-.support p.hint { margin: 0; color: var(--muted); font-size: 12.5px; }
+.support p.hint { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
 .support dl { margin: 12px 0 0; }
 .support .row {
   display: grid;
@@ -461,7 +490,42 @@ label.field-label {
   color: var(--muted);
   font-size: 13px;
 }
-.support--prefix dt { color: var(--accent); font-weight: 500; }
+
+/* Routing dots + the legend that decodes them. */
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: 0;
+}
+.dot--immutable { background: var(--rule-immutable); }
+.dot--refresh { background: var(--rule-refresh); }
+.dot--standard { background: var(--rule-standard); }
+.dot--api { background: var(--rule-api); }
+.dot--git { background: var(--rule-git); }
+.dot--lfs { background: var(--rule-lfs); }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend span { display: inline-flex; align-items: center; }
+.legend .dot { margin-right: 6px; }
+/* Short prefixes are the highlighter's home turf: a yellow wash marks the
+   token you would actually retype. */
+.support--prefix dt {
+  background: var(--accent-wash);
+  border-radius: 6px;
+  padding: 2px 8px;
+  justify-self: start;
+  color: var(--accent-deep);
+  font-weight: 500;
+}
 
 /* ===== errors ===== */
 .error {
@@ -469,8 +533,8 @@ label.field-label {
   gap: 8px;
   margin-top: 12px;
   padding: 10px 12px;
-  border: 1px solid var(--danger);
-  border-radius: 9px;
+  border: 1.5px solid var(--danger);
+  border-radius: 12px;
   background: var(--danger-soft);
   color: var(--danger);
   font-size: 13px;
@@ -495,12 +559,14 @@ label.field-label {
   top: -60px;
   z-index: 10;
   padding: 9px 14px;
-  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
   background: var(--accent);
   color: var(--accent-ink);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink);
   transition: top 120ms ease;
 }
 .skip:focus-visible { top: 12px; }
@@ -508,9 +574,9 @@ label.field-label {
 /* ===== small screens ===== */
 @media (max-width: 640px) {
   .page { padding: 0 16px 56px; }
-  .hero { padding-top: 28px; }
-  .tool { padding: 16px 14px 18px; border-radius: 14px; }
-  .support { margin-top: 32px; padding: 18px 16px 4px; }
+  .hero { padding-top: 26px; }
+  .tool { padding: 16px 14px 18px; border-radius: 15px; box-shadow: 4px 4px 0 var(--offset); }
+  .support { margin-top: 34px; }
   .support .row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .support dd { padding-bottom: 2px; }
   .input-shell { flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
@@ -524,21 +590,40 @@ label.field-label {
   .command code { flex-basis: 100%; }
   .command .ghost-button { margin-left: auto; }
 }
+@media (max-width: 350px) {
+  .headline { font-size: 22px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .flash { animation: none; }
+  .headline .hl::before { animation: none; }
   * { transition: none !important; }
   .ghost-button:active, #tool button[type="submit"]:active { transform: none; }
 }
-/* background-clip:text paints the headline as a gradient; with transparent
-   text it disappears entirely in forced-colors mode unless it is restored. */
+/* The stamp chips and the highlight rely on background color; forced-colors
+   mode remaps both to Highlight so they stay visible. */
 @media (forced-colors: active) {
-  .headline { background: none; color: CanvasText; -webkit-text-fill-color: CanvasText; }
+  .headline .hl { color: CanvasText; }
+  .headline .hl::before { background: Highlight; }
   .result-text .prefix,
-  .command code .prefix { background: Highlight; color: HighlightText; }
-  .status::before { background: CanvasText; }
+  .command code .prefix {
+    background: Highlight;
+    color: HighlightText;
+    box-shadow: none;
+  }
+  .status::before, .dot { background: CanvasText; }
 }
 ${fontCss}
 </style>`;
+}
+
+/** Match a host-table pattern to the X-Proxy-Rule class the Worker would emit. */
+function ruleOf(pattern) {
+  if (/info\/lfs/.test(pattern)) return 'lfs';
+  if (/\.git$/.test(pattern)) return 'git';
+  if (/releases\/download|archive\//.test(pattern)) return 'immutable';
+  if (/raw\.|codeload\./.test(pattern)) return 'refresh';
+  if (/api\./.test(pattern)) return 'api';
+  return 'standard';
 }
 
 export function bodyMarkup(copy) {
@@ -546,7 +631,7 @@ export function bodyMarkup(copy) {
   const rows = copy.hostTable
     .map(
       ([pattern, note]) =>
-        `<div class="row"><dt>${escapeHtml(pattern)}</dt><dd>${escapeHtml(note)}</dd></div>`,
+        `<div class="row"><dt><i class="dot dot--${ruleOf(pattern)}" aria-hidden="true"></i>${escapeHtml(pattern)}</dt><dd>${escapeHtml(note)}</dd></div>`,
     )
     .join('\n        ');
   const prefixRows = (copy.prefixTable || [])
@@ -571,7 +656,7 @@ export function bodyMarkup(copy) {
   </header>
 
   <section class="hero">
-    <h1 class="headline"><span>${escapeHtml(line1)}</span><span>${escapeHtml(line2)}</span></h1>
+    <h1 class="headline"><span class="l1">${escapeHtml(line1)}</span><span class="hl">${escapeHtml(line2)}</span></h1>
     <p class="lead">${escapeHtml(copy.lead)}</p>
 
     <form class="tool" method="get" action="/" id="tool" tabindex="-1">
@@ -615,7 +700,15 @@ export function bodyMarkup(copy) {
 
   <section class="support" aria-labelledby="support-title">
     <h2 id="support-title">支持的地址</h2>
-    <p class="hint">左边是你粘贴的地址，右边是代理对它的处理。</p>
+    <p class="hint">左边是你粘贴的地址，右边是代理对它的处理。圆点对应缓存行为。</p>
+    <p class="legend">
+      <span><i class="dot dot--immutable" aria-hidden="true"></i>缓存一年</span>
+      <span><i class="dot dot--refresh" aria-hidden="true"></i>60 秒重验</span>
+      <span><i class="dot dot--standard" aria-hidden="true"></i>常规透传</span>
+      <span><i class="dot dot--api" aria-hidden="true"></i>不缓存</span>
+      <span><i class="dot dot--git" aria-hidden="true"></i>只读 git</span>
+      <span><i class="dot dot--lfs" aria-hidden="true"></i>LFS</span>
+    </p>
     <dl>
         ${rows}
     </dl>
