@@ -162,7 +162,10 @@ export function upstreamHeaders(incoming, opts = {}) {
   out.set('accept-encoding', 'identity');
 
   if (opts.git) {
-    for (const name of ['git-protocol', 'content-type', 'accept']) {
+    // git compresses large upload-pack request bodies (`Content-Encoding: gzip`).
+    // The body is replayed byte-for-byte, so the encoding header must survive;
+    // dropping it makes GitHub's packfile parser fail with a 400.
+    for (const name of ['git-protocol', 'content-type', 'accept', 'content-encoding']) {
       const value = incoming.get(name);
       if (value) out.set(name, value);
     }

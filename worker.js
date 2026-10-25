@@ -85,12 +85,15 @@ export default {
     }
 
     const response = await handleProxy(request, env, ctx);
-    if (response.status === 400 && url.pathname !== '/') {
-      // A 400 on a path that is not a proxy target is a navigation mistake, not
-      // an upstream failure: point at the supported hosts instead of a dead end.
-      if (settings.mode !== 'relay') return maskPage(settings, request);
-      return guidance(url.origin);
-    }
+  if (
+    response.status === 400 && url.pathname !== '/' &&
+    (request.method === 'GET' || request.method === 'HEAD')
+  ) {
+    // A GET 400 on a path that is not a proxy target is a navigation mistake;
+    // POST 400s are upstream answers and must reach the client verbatim.
+    if (settings.mode !== 'relay') return maskPage(settings, request);
+    return guidance(url.origin);
+  }
     return response;
   },
 };
